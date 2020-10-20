@@ -7,15 +7,31 @@ import java.util.regex.Pattern
 
 const val address = "https://www.lgl.bayern.de/gesundheit/infektionsschutz/infektionskrankheiten_a_z/coronavirus/karte_coronavirus/"
 
+//<tr>
+//<td>München Stadt</td>
+//<td>
+//13.665                                </td>
+//<td>
+//(+ 97)                                </td>
+//<td>920,68                                </td>
+//<td>1.075</td>
+//<td>72,43                                </td>
+//<td>
+//236                                </td>
+//<td>
+//-                                </td>
+//</tr>
+
+
 val cityPattern = Pattern.compile(
     "<td>(.+)</td>\\s*" +
-            "<td>([\\d,\\.]+)</td>\\s*" +
-            "<td>(.+)</td>\\s*" +
-            "<td>([\\d,\\.]+)</td>\\s*" +
-            "<td>([\\d,\\.]+)</td>\\s*" +
-            "<td>([\\d,\\.]+)</td>\\s*" +
-            "<td>([\\d,\\.]+)</td>\\s*" +
-            "<td>(.+)</td>"
+            "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
+            "<td>\\s*(.+)\\s*</td>\\s*" +
+            "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
+            "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
+            "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
+            "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
+            "<td>\\s*(.+)\\s*</td>"
 )
 val datePattern = Pattern.compile(
     "publikationsDatum\\s=\\s\"(\\d+)\\.(\\d+)\\.(\\d+)\""
@@ -32,6 +48,8 @@ fun main(args: Array<String>) {
     }
 
     val html = URL(address).readText()
+//    println(html)
+
     val dateMatcher = datePattern.matcher(html)
 
     if(!dateMatcher.find()) {
@@ -47,7 +65,7 @@ fun main(args: Array<String>) {
         set(Calendar.MINUTE, 0)
         set(Calendar.SECOND, 0)
     }
-    date = GregorianCalendar.from(ZonedDateTime.ofInstant(date.toInstant().minus(Duration.ofDays(1)), ZoneId.systemDefault()))
+//    date = GregorianCalendar.from(ZonedDateTime.ofInstant(date.toInstant().minus(Duration.ofDays(1)), ZoneId.systemDefault()))
 
     val matcher = cityPattern.matcher(html)
 
@@ -58,12 +76,12 @@ fun main(args: Array<String>) {
         cities[name] = Info(
             name,
             matcher.group(2).replace(".", "").toInt(),
-            matcher.group(3).replace(".", ""),
+            matcher.group(3).replace(".", "").trim(),
             matcher.group(4).replace(".", "").toDoubleComma(),
             matcher.group(5).replace(".", "").toInt(),
             matcher.group(6).replace(".", "").toDoubleComma(),
             matcher.group(7).replace(".", "").toInt(),
-            matcher.group(8)
+            matcher.group(8).trim()
         )
     }
 
