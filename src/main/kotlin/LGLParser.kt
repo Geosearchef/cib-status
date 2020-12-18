@@ -34,10 +34,7 @@ object LGLParser {
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
                 "<td>\\s*(.+)\\s*</td>"
     )
-    val datePattern = Pattern.compile(
-        "publikationsDatum\\s=\\s\"(\\d+)\\.(\\d+)\\.(\\d+)\""
-    )
-
+    val datePattern = Pattern.compile("publikationsDatum\\s=\\s[\"'](\\d+)\\.(\\d+)\\.(\\d+)[\"']")
 
     fun parseData(): HashMap<String, Info> {
         val html = URL(address).readText()
