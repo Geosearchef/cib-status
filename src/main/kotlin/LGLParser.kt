@@ -106,6 +106,8 @@ object LGLParser {
                     val deathCount: Int,
                     val deathsChange: String) {
 
+        val dayString = toDayString(date)
+
         fun toInfoString() : String {
             return String.format("${toDayString(date)}: %.1f", sevenDayIncidencePer100k)
         }
