@@ -114,7 +114,7 @@ object LGLParser {
 
     }
 
-    private fun toDayString(calendar: Calendar) : String {
+    public fun toDayString(calendar: Calendar) : String {
         return when(calendar.get(Calendar.DAY_OF_WEEK)) {
             Calendar.MONDAY -> "Mo"
             Calendar.TUESDAY -> "Di"
