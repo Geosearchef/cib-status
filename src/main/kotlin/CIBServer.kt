@@ -68,14 +68,33 @@ object CIBServer {
             RKIParser.updateAndGetData()[state]?.let {
                 """<div style="font-size: 40px">
                     <h2>${it.stateName}</h2>
-                    <h3>${it.toInfoString()}</h3>
+                    <h3>1. ${it.toInfoString()}</h3>
+                    <h3>2. ${it.toInfoStringSecond()}</h3>
+                    
+                    <br><h4>Erstimpfung</h4>
                     Impfungen: ${it.count} <br>
                     Anteil Gesamtbevölkerung: ${String.format("%.2f", it.count.toFloat() / it.population.toFloat() * 100.0)} % <br>
+                    <br>
+                    BioNTech: ${it.countBioNTech}<br>
+                    Moderna: ${it.countModerna}<br>
+                    
                     Differenz zum Vortag: ${it.countChange} <br><br>
                     Indikation nach Alter: ${it.countAged} <br>
                     Berufliche Indikation: ${it.countJob} <br>
                     Medizinische Indikation: ${it.countMedical}<br>
                     PflegeheimbewohnerIn: ${it.countNursingHome} <br>
+                    
+                    <br><h4>Zweitimpfung</h4>
+                    Impfungen: ${it.count_2} <br>
+                    Anteil Gesamtbevölkerung: ${String.format("%.2f", it.count_2.toFloat() / it.population.toFloat() * 100.0)} % <br>
+                    Differenz zum Vortag: ${it.countChange_2} <br><br>
+                    Indikation nach Alter: ${it.countAged_2} <br>
+                    Berufliche Indikation: ${it.countJob_2} <br>
+                    Medizinische Indikation: ${it.countMedical_2}<br>
+                    PflegeheimbewohnerIn: ${it.countNursingHome_2} <br>
+                    
+                    <br>
+                    <button style="$buttonStyle" onclick="location.href = '/states';">Back</button>
                     </div>
                 """.trimIndent()
             } ?: "Not found"

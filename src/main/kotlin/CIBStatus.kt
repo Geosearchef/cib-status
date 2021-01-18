@@ -52,6 +52,7 @@ fun standalone(args: Array<String>) {
         println(state)
     } else if(args[0] == "--info-vacc" && args.size >= 2) {
         println(states[args[1]]?.toInfoString() ?: "Not found")
+        println(states[args[1]]?.toInfoStringSecond() ?: "Not found")
     }
 }
 
