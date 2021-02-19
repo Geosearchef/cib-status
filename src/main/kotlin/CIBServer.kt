@@ -1,10 +1,6 @@
 import com.google.gson.Gson
 import spark.Spark.get
 import spark.Spark.port
-import java.text.SimpleDateFormat
-import java.time.Duration
-import java.time.Instant
-import java.util.*
 
 object CIBServer {
 
@@ -74,15 +70,23 @@ object CIBServer {
                     <br><h4>Erstimpfung</h4>
                     Impfungen: ${it.count} <br>
                     Anteil Gesamtbevölkerung: ${String.format("%.2f", it.count.toFloat() / it.population.toFloat() * 100.0)} % <br>
+                    Differenz zum Vortag: ${it.countChange} <br>
+                    
+                    <div id="populationPercentageChart" style="width: 100%; height: 500px;"></div>
+                    
                     <br>
                     BioNTech: ${it.countBioNTech}<br>
                     Moderna: ${it.countModerna}<br>
+                    AstraZeneca: ${it.countModerna}<br><br>
                     
-                    Differenz zum Vortag: ${it.countChange} <br><br>
+                    <div id="manufacturerChart" style="width: 100%; height: 500px;"></div>
+                    
                     Indikation nach Alter: ${it.countAged} <br>
                     Berufliche Indikation: ${it.countJob} <br>
                     Medizinische Indikation: ${it.countMedical}<br>
                     PflegeheimbewohnerIn: ${it.countNursingHome} <br>
+                    
+                    <div id="indicationChart" style="width: 100%; height: 500px;"></div>
                     
                     <br><h4>Zweitimpfung</h4>
                     Impfungen: ${it.count_2} <br>
@@ -96,6 +100,69 @@ object CIBServer {
                     <br>
                     <button style="$buttonStyle" onclick="location.href = '/states';">Back</button>
                     </div>
+                    
+                    
+                    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+                        <script type="text/javascript">
+                          google.charts.load('current', {'packages':['corechart']});
+                          google.charts.setOnLoadCallback(drawCharts);
+
+                          function drawCharts() {
+                            
+                            var data = google.visualization.arrayToDataTable([
+                              ['Impfungen', 'Anzahl'],
+                              ['nur Erstimpfung',     ${it.count - it.count_2}],
+                              ['Erst- und Zweitimpfung',     ${it.count_2}],
+                              ['Ungeimpft',      ${it.population - it.count}]
+                            ]);
+
+                            var options = {
+                              title: 'Bevölkerungsanteil',
+                              //legend: 'none',
+                              //pieSliceText: 'label'
+                            };
+
+                            var chart = new google.visualization.PieChart(document.getElementById('populationPercentageChart'));
+                            chart.draw(data, options);
+                            
+                            
+                            
+                            var data = google.visualization.arrayToDataTable([
+                              ['Impfungen', 'Anzahl'],
+                              ['BioNTech',     ${it.countBioNTech}],
+                              ['Moderna',     ${it.countModerna}],
+                              ['AstraZeneca',      ${it.countAstraZeneca}]
+                            ]);
+
+                            var options = {
+                              title: 'Hersteller',
+                              //legend: 'none',
+                              //pieSliceText: 'label'
+                            };
+
+                            var chart = new google.visualization.PieChart(document.getElementById('manufacturerChart'));
+                            chart.draw(data, options);
+                            
+                            
+                            
+                            var data = google.visualization.arrayToDataTable([
+                              ['Impfungen', 'Anzahl'],
+                              ['Indikation nach Alter',     ${it.countAged}],
+                              ['Berufliche Indikation',     ${it.countJob}],
+                              ['Medizinische Indikation',      ${it.countMedical}],
+                              ['PflegeheimbewohnerIn',      ${it.countNursingHome}]
+                            ]);
+
+                            var options = {
+                              title: 'Indikation',
+                              //legend: 'none',
+                              //pieSliceText: 'label'
+                            };
+
+                            var chart = new google.visualization.PieChart(document.getElementById('indicationChart'));
+                            chart.draw(data, options);
+                          }
+                        </script>
                 """.trimIndent()
             } ?: "Not found"
         }

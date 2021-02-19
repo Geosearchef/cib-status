@@ -29,7 +29,8 @@ object RKIParser {
     const val COLUMN_COUNT_NURSING_HOME = "Pflegeheim"
     const val COLUMN_COUNT_BIONTECH = "BioNTech"
     const val COLUMN_COUNT_MODERNA = "Moderna"
-    val COLUMN_NAMES = listOf(COLUMN_STATE, COLUMN_TOTAL_VACC, COLUMN_CHANGE_VACC, COLUMN_COUNT_AGED, COLUMN_COUNT_JOB, COLUMN_COUNT_MEDICAL, COLUMN_COUNT_NURSING_HOME, COLUMN_COUNT_BIONTECH, COLUMN_COUNT_MODERNA)
+    const val COLUMN_COUNT_ASTRAZENECA = "AstraZeneca"
+    val COLUMN_NAMES = listOf(COLUMN_STATE, COLUMN_TOTAL_VACC, COLUMN_CHANGE_VACC, COLUMN_COUNT_AGED, COLUMN_COUNT_JOB, COLUMN_COUNT_MEDICAL, COLUMN_COUNT_NURSING_HOME, COLUMN_COUNT_BIONTECH, COLUMN_COUNT_MODERNA, COLUMN_COUNT_ASTRAZENECA)
 
     var populations = mapOf(
         "Baden-Württemberg" to 11100394,
@@ -150,7 +151,8 @@ object RKIParser {
                 row.getCell(COLUMN_COUNT_MEDICAL, 1)?.numericCellValue?.toInt() ?: 0,
                 row.getCell(COLUMN_COUNT_NURSING_HOME, 1)?.numericCellValue?.toInt() ?: 0,
                 row.getCell(COLUMN_COUNT_BIONTECH, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_MODERNA, 0)?.numericCellValue?.toInt() ?: 0
+                row.getCell(COLUMN_COUNT_MODERNA, 0)?.numericCellValue?.toInt() ?: 0,
+                row.getCell(COLUMN_COUNT_ASTRAZENECA, 0)?.numericCellValue?.toInt() ?: 0
             )
 
             result[stateInfo.stateName] = stateInfo
@@ -174,7 +176,8 @@ object RKIParser {
                 result.values.sumBy { it.countMedical_2 },
                 result.values.sumBy { it.countNursingHome_2 },
                 result.values.sumBy { it.countBioNTech },
-                result.values.sumBy { it.countModerna }
+                result.values.sumBy { it.countModerna },
+                result.values.sumBy { it.countAstraZeneca }
         )
 
         return result
@@ -215,7 +218,8 @@ object RKIParser {
         val countMedical_2: Int,
         val countNursingHome_2: Int,
         val countBioNTech: Int,
-        val countModerna: Int
+        val countModerna: Int,
+        val countAstraZeneca: Int
     ) {
         fun toInfoString() : String {
             return String.format("${toDayString(date)}: %.2f%% (+%.2f%%), %d (+%d)", count.toDouble() / population.toDouble() * 100.0, countChange.toDouble() / population.toDouble() * 100.0, count, countChange)
