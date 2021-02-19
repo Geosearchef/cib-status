@@ -72,21 +72,21 @@ object CIBServer {
                     Anteil Gesamtbevölkerung: ${String.format("%.2f", it.count.toFloat() / it.population.toFloat() * 100.0)} % <br>
                     Differenz zum Vortag: ${it.countChange} <br>
                     
-                    <div id="populationPercentageChart" style="width: 100%; height: 500px;"></div>
+                    <div id="populationPercentageChart" style="width: 100%; height: 700px;"></div>
                     
                     <br>
-                    BioNTech: ${it.countBioNTech}<br>
+                    <!--BioNTech: ${it.countBioNTech}<br>
                     Moderna: ${it.countModerna}<br>
-                    AstraZeneca: ${it.countModerna}<br><br>
+                    AstraZeneca: ${it.countModerna}<br><br>-->
                     
-                    <div id="manufacturerChart" style="width: 100%; height: 500px;"></div>
+                    <div id="manufacturerChart" style="width: 100%; height: 700px;"></div>
                     
-                    Indikation nach Alter: ${it.countAged} <br>
+                    <!--Indikation nach Alter: ${it.countAged} <br>
                     Berufliche Indikation: ${it.countJob} <br>
                     Medizinische Indikation: ${it.countMedical}<br>
-                    PflegeheimbewohnerIn: ${it.countNursingHome} <br>
+                    PflegeheimbewohnerIn: ${it.countNursingHome} <br>-->
                     
-                    <div id="indicationChart" style="width: 100%; height: 500px;"></div>
+                    <div id="indicationChart" style="width: 100%; height: 700px;"></div>
                     
                     <br><h4>Zweitimpfung</h4>
                     Impfungen: ${it.count_2} <br>
