@@ -23,7 +23,7 @@ object LGLParser {
 //<td>
 //-                                </td>
 //</tr>
-
+    //"lkr_162":{"id":"lkr_162","anzahl":"58907","inzidenz":3968.87,"inzidenz7Tage":100.19,"tote":"1114","landkreis":"M\u00fcnchen Stadt"}
     val cityPattern = Pattern.compile(
         "<td>(.+)</td>\\s*" +
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
@@ -38,6 +38,7 @@ object LGLParser {
 
     fun parseData(): HashMap<String, Info> {
         val html = URL(address).readText()
+        val htmlWithoutSecondTable = html.split("die mittels einer variantenspezifischen PCR")[0]
 
         val dateMatcher = datePattern.matcher(html)
 
@@ -56,7 +57,7 @@ object LGLParser {
         }
 //    date = GregorianCalendar.from(ZonedDateTime.ofInstant(date.toInstant().minus(Duration.ofDays(1)), ZoneId.systemDefault()))
 
-        val matcher = cityPattern.matcher(html)
+        val matcher = cityPattern.matcher(htmlWithoutSecondTable)
 
         val cities = HashMap<String, Info>()
 
