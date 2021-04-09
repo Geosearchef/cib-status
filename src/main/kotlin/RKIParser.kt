@@ -12,6 +12,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 object RKIParser {
@@ -86,8 +87,8 @@ object RKIParser {
 
         // Analyze table
         val workbook = XSSFWorkbook(Files.newInputStream(tableFile))
-        val sheetSum = workbook.sheetIterator().asSequence().find { it.sheetName.contains("Gesamt") && isDataSheet(it) }
-        val sheetIndications = workbook.sheetIterator().asSequence().find { it.sheetName.contains("Indik") && isDataSheet(it) }
+        val sheetSum = workbook.sheetIterator().asSequence().find { (it.sheetName.contains("Gesamt") || it.sheetName.contains("Impfstoff")) && isDataSheet(it) }
+        val sheetIndications = workbook.sheetIterator().asSequence().find { it.sheetName.contains("Impfquote") && isDataSheet(it) }
         if(sheetSum == null || sheetIndications == null) {
             println("Sheet not found")
             return result
@@ -95,89 +96,143 @@ object RKIParser {
         println("Using sheet 1: ${sheetSum.sheetName}")
         println("Using sheet 2: ${sheetIndications.sheetName}")
 
-        val headerRowsToScan = LinkedList<Row>()
-
-        val rowIter = sheetSum.rowIterator()
-        val rowIterInd = sheetIndications.rowIterator()
-
-        headerRowsToScan.add(rowIter.next()) // first 3 rows
-        headerRowsToScan.add(rowIter.next())
-        headerRowsToScan.add(rowIter.next())
-        headerRowsToScan.add(rowIterInd.next()) // first 2 rows
-        headerRowsToScan.add(rowIterInd.next())
-
-
-        // find indices for desired columns
-        columnLocations.clear()
-        for(row in headerRowsToScan) {
-            for(cellIndex in 0 until 30) {
-                val cellString = row.getCell(cellIndex)?.stringCellValue ?: continue
-                COLUMN_NAMES.filter { cellString.contains(it)}.forEach {
-                    val list = columnLocations.computeIfAbsent(it) { LinkedList() }
-                    list.add(DataColumnLocation(row.sheet, cellIndex))
-                }
-            }
-        }
-
-
-        while(rowIter.hasNext()) {
-            val row = mapOf(
-                    sheetSum to rowIter.next(),
-                    sheetIndications to rowIterInd.next()
-            )
-
-//            if(row.getCell(columnLocations[COLUMN_TOTAL_VACC]?.first()?.index ?: 2).cellType != CellType.NUMERIC || row.getCell(columnLocations[COLUMN_STATE]?.first()?.index ?: 1).stringCellValue.equals("Gesamt")) {
+        // data not present in sheet anymore
+//        val headerRowsToScan = LinkedList<Row>()
+//
+//        val rowIter = sheetSum.rowIterator()
+//        val rowIterInd = sheetIndications.rowIterator()
+//
+//        headerRowsToScan.add(rowIter.next()) // first 3 rows
+//        headerRowsToScan.add(rowIter.next())
+//        headerRowsToScan.add(rowIter.next())
+//        headerRowsToScan.add(rowIterInd.next()) // first 2 rows
+//        headerRowsToScan.add(rowIterInd.next())
+//
+//
+//        // find indices for desired columns
+//        columnLocations.clear()
+//        for(row in headerRowsToScan) {
+//            for(cellIndex in 0 until 30) {
+//                val cellString = row.getCell(cellIndex)?.stringCellValue ?: continue
+//                COLUMN_NAMES.filter { cellString.contains(it)}.forEach {
+//                    val list = columnLocations.computeIfAbsent(it) { LinkedList() }
+//                    list.add(DataColumnLocation(row.sheet, cellIndex))
+//                }
+//            }
+//        }
+//
+//
+//        while(rowIter.hasNext()) {
+//            val row = mapOf(
+//                    sheetSum to rowIter.next(),
+//                    sheetIndications to rowIterInd.next()
+//            )
+//
+////            if(row.getCell(columnLocations[COLUMN_TOTAL_VACC]?.first()?.index ?: 2).cellType != CellType.NUMERIC || row.getCell(columnLocations[COLUMN_STATE]?.first()?.index ?: 1).stringCellValue.equals("Gesamt")) {
+////                break
+////            }
+//
+//            if(row[sheetSum]!!.getCell(0).cellType != CellType.NUMERIC && row[sheetSum]!!.getCell(0).stringCellValue.isBlank()) {
 //                break
 //            }
+//
+//
+//            val stateInfo = StateVaccinationInfo(
+//                row.getCell(COLUMN_STATE, 0)?.stringCellValue ?: "unknown",
+//                date,
+//                row.getCell(COLUMN_TOTAL_VACC, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_CHANGE_VACC, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_AGED, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_JOB, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_MEDICAL, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_NURSING_HOME, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_TOTAL_VACC, 1)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_CHANGE_VACC, 1)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_AGED, 1)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_JOB, 1)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_MEDICAL, 1)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_NURSING_HOME, 1)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_BIONTECH, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_MODERNA, 0)?.numericCellValue?.toInt() ?: 0,
+//                row.getCell(COLUMN_COUNT_ASTRAZENECA, 0)?.numericCellValue?.toInt() ?: 0
+//            )
+//
+//            result[stateInfo.stateName] = stateInfo
+//        }
+//
+//        check(populations.values.sum() == populations["Deutschland"]!! * 2) // contains itself
+//
+//        result["Deutschland"] = StateVaccinationInfo(
+//                "Deutschland",
+//                date,
+//                result.values.sumBy { it.count },
+//                result.values.sumBy { it.countChange },
+//                result.values.sumBy { it.countAged },
+//                result.values.sumBy { it.countJob },
+//                result.values.sumBy { it.countMedical },
+//                result.values.sumBy { it.countNursingHome },
+//                result.values.sumBy { it.count_2 },
+//                result.values.sumBy { it.countChange_2 },
+//                result.values.sumBy { it.countAged_2 },
+//                result.values.sumBy { it.countJob_2 },
+//                result.values.sumBy { it.countMedical_2 },
+//                result.values.sumBy { it.countNursingHome_2 },
+//                result.values.sumBy { it.countBioNTech },
+//                result.values.sumBy { it.countModerna },
+//                result.values.sumBy { it.countAstraZeneca }
+//        )
 
-            if(row[sheetSum]!!.getCell(0).cellType != CellType.NUMERIC && row[sheetSum]!!.getCell(0).stringCellValue.isBlank()) {
+        val sheetTimeSeries = workbook.sheetIterator().asSequence().find { it.sheetName.contains("Impfungen") && it.rowIterator().next().getCell(0).stringCellValue == "Datum" }
+        if(sheetTimeSeries == null) {
+            println("Sheet not found")
+            return result
+        }
+
+        println("Using sheet 3: ${sheetTimeSeries.sheetName}")
+
+        val rowIter = sheetTimeSeries.rowIterator()
+        val topRow = rowIter.next()
+
+        val doseInfos: MutableList<DateDoseInfo> = ArrayList()
+
+        while(rowIter.hasNext()) {
+            val row = rowIter.next()
+
+            if(row.getCell(0).cellType != CellType.NUMERIC) {
                 break
             }
 
-
-            val stateInfo = StateVaccinationInfo(
-                row.getCell(COLUMN_STATE, 0)?.stringCellValue ?: "unknown",
-                date,
-                row.getCell(COLUMN_TOTAL_VACC, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_CHANGE_VACC, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_AGED, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_JOB, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_MEDICAL, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_NURSING_HOME, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_TOTAL_VACC, 1)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_CHANGE_VACC, 1)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_AGED, 1)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_JOB, 1)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_MEDICAL, 1)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_NURSING_HOME, 1)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_BIONTECH, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_MODERNA, 0)?.numericCellValue?.toInt() ?: 0,
-                row.getCell(COLUMN_COUNT_ASTRAZENECA, 0)?.numericCellValue?.toInt() ?: 0
+            val doseInfo = DateDoseInfo(
+                row.getCell(0).dateCellValue,
+                first = row.getCell(1).numericCellValue.toInt(),
+                second = row.getCell(2).numericCellValue.toInt(),
+                total = row.getCell(3).numericCellValue.toInt()
             )
 
-            result[stateInfo.stateName] = stateInfo
+            assert(doseInfo.first + doseInfo.second == doseInfo.total)
+            doseInfos.add(doseInfo)
         }
 
-        check(populations.values.sum() == populations["Deutschland"]!! * 2) // contains itself
+
 
         result["Deutschland"] = StateVaccinationInfo(
-                "Deutschland",
-                date,
-                result.values.sumBy { it.count },
-                result.values.sumBy { it.countChange },
-                result.values.sumBy { it.countAged },
-                result.values.sumBy { it.countJob },
-                result.values.sumBy { it.countMedical },
-                result.values.sumBy { it.countNursingHome },
-                result.values.sumBy { it.count_2 },
-                result.values.sumBy { it.countChange_2 },
-                result.values.sumBy { it.countAged_2 },
-                result.values.sumBy { it.countJob_2 },
-                result.values.sumBy { it.countMedical_2 },
-                result.values.sumBy { it.countNursingHome_2 },
-                result.values.sumBy { it.countBioNTech },
-                result.values.sumBy { it.countModerna },
-                result.values.sumBy { it.countAstraZeneca }
+            "Deutschland",
+            date,
+            doseInfos.sumBy { it.first },
+            doseInfos.last().first,
+            0,
+            0,
+            0,
+            0,
+            doseInfos.sumBy { it.second },
+            doseInfos.last().second,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
         )
 
         return result
@@ -201,6 +256,8 @@ object RKIParser {
 
         return stateVaccinationInfos!!
     }
+
+    data class DateDoseInfo(val date: Date, val first: Int, val second: Int, val total: Int)
 
     data class StateVaccinationInfo(
         val stateName: String,

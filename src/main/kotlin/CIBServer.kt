@@ -1,4 +1,5 @@
 import com.google.gson.Gson
+import org.eclipse.jetty.http.HttpStatus
 import spark.Spark.get
 import spark.Spark.port
 
@@ -9,6 +10,11 @@ object CIBServer {
 
     fun start(port: Int) {
         port(port)
+
+        get("/") { req, res ->
+            res.redirect("/states")
+            res.status(HttpStatus.MOVED_PERMANENTLY_301)
+        }
 
         get("/cities") { req, res ->
             var html = LGLParser.updateAndGetData().keys
