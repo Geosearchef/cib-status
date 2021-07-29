@@ -25,7 +25,7 @@ object LGLParser {
 //</tr>
     //"lkr_162":{"id":"lkr_162","anzahl":"58907","inzidenz":3968.87,"inzidenz7Tage":100.19,"tote":"1114","landkreis":"M\u00fcnchen Stadt"}
     val cityPattern = Pattern.compile(
-        "<td>(.+)</td>\\s*" +
+        "<td>\\s*(.+)\\s*</td>\\s*" +
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
                 "<td>\\s*(.+)\\s*</td>\\s*" +
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
@@ -34,6 +34,7 @@ object LGLParser {
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
                 "<td>\\s*(.+)\\s*</td>"
     )
+    val testPattern = Pattern.compile("\\s*<td>\\s*(.+)\\s*</td>\\s*")
     val datePattern = Pattern.compile("publikationsDatum\\s=\\s[\"'](\\d+)\\.(\\d+)\\.(\\d+)[\"']")
 
     fun parseData(): HashMap<String, Info> {
@@ -57,12 +58,13 @@ object LGLParser {
         }
 //    date = GregorianCalendar.from(ZonedDateTime.ofInstant(date.toInstant().minus(Duration.ofDays(1)), ZoneId.systemDefault()))
 
-        val matcher = cityPattern.matcher(htmlWithoutSecondTable)
+        val matcher = cityPattern.matcher(htmlWithoutSecondTable.split("Fallzahlen nach kreisfreien Städten und Landkreisen")[1].split("Fälle nach Meldedatum")[0])
+        // TODO: if you're having an issue, this might be it
 
         val cities = HashMap<String, Info>()
 
         while(matcher.find()) {
-            val name = matcher.group(1).replace(" ", "_")
+            val name = matcher.group(1).trim().replace(" ", "_")
             cities[name] = Info(
                 name,
                 date,
