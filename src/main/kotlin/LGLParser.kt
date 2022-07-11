@@ -25,7 +25,7 @@ object LGLParser {
 //</tr>
     //"lkr_162":{"id":"lkr_162","anzahl":"58907","inzidenz":3968.87,"inzidenz7Tage":100.19,"tote":"1114","landkreis":"M\u00fcnchen Stadt"}
     val cityPattern = Pattern.compile(
-        "<td>\\s*(.+)\\s*</td>\\s*" +
+        "<td style=\"text-align:left\">\\s*(.+)\\s*</td>\\s*" +
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
                 "<td>\\s*(.+)\\s*</td>\\s*" +
                 "<td>\\s*([\\d,\\.]+)\\s*</td>\\s*" +
@@ -35,17 +35,23 @@ object LGLParser {
                 "<td>\\s*(.+)\\s*</td>"
     )
     val testPattern = Pattern.compile("\\s*<td>\\s*(.+)\\s*</td>\\s*")
-    val datePattern = Pattern.compile("publikationsDatum\\s=\\s[\"'](\\d+)\\.(\\d+)\\.(\\d+)[\"']")
+//    val datePattern = Pattern.compile("publikationsDatum\\s=\\s[\"'](\\d+)\\.(\\d+)\\.(\\d+)[\"']")
+    val datePattern = Pattern.compile("Datenstand:\\s+\n?\\s+(\\d+)\\.(\\d+)\\.(\\d+),")
 
     fun parseData(): HashMap<String, Info> {
         val html = URL(address).readText()
         val htmlWithoutSecondTable = html.split("die mittels einer variantenspezifischen PCR")[0]
 
-        val dateMatcher = datePattern.matcher(html)
+        val dateMatcher = datePattern.matcher(html.split("Fallzahlen nach kreisfreien Städten und Landkreisen")[1])
 
         if(!dateMatcher.find()) {
             println("Couldn't find date")
             throw InputMismatchException("Couldn't find date")
+        }
+
+        var year = dateMatcher.group(3)
+        if (year.length == 2) {
+            year = "20$year"
         }
 
         var date = Calendar.getInstance().apply {
@@ -64,7 +70,7 @@ object LGLParser {
         val cities = HashMap<String, Info>()
 
         while(matcher.find()) {
-            val name = matcher.group(1).trim().replace(" ", "_")
+            val name = matcher.group(1).trim().replace(" ", "_").replace("&nbsp;(LK)", "").replace("&nbsp;(Stadt)", "_Stadt")
             cities[name] = Info(
                 name,
                 date,

@@ -175,20 +175,32 @@ object CIBServer {
 
         get("/api/cities") { req, res ->
             res.type("application/json")
+            res.header("Access-Control-Allow-Origin", "*")
+            res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+            res.header("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
             gson.toJson(LGLParser.updateAndGetData().keys)
         }
         get("/api/city") { req, res ->
             val city = req.queryParams("c")
             res.type("application/json")
+            res.header("Access-Control-Allow-Origin", "*")
+            res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+            res.header("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
             gson.toJson(LGLParser.updateAndGetData()[city])
         }
         get("/api/states") { req, res ->
             res.type("application/json")
+            res.header("Access-Control-Allow-Origin", "*")
+            res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+            res.header("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
             gson.toJson(RKIParser.updateAndGetData().keys)
         }
         get("/api/state") { req, res ->
             val state = req.queryParams("s")
             res.type("application/json")
+            res.header("Access-Control-Allow-Origin", "*")
+            res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+            res.header("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token")
             gson.toJson(RKIParser.updateAndGetData()[state])
         }
     }
